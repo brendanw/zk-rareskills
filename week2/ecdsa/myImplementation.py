@@ -18,22 +18,19 @@ print(f'pubKeyPoint: {pubKeyPoint}')
 print(f'pubKeyX: {pubKeyPoint.x}')
 
 # 3) pick message m and hash it to produce h (h can be thought of as a 256-bit number)
-m = "hello world"
+msg1 = "hello world"
 def hashMsg(msg):
     keccak_hash = keccak.new(digest_bits=256)
-    keccak_hash.update(m.encode('utf-8'))
+    keccak_hash.update(msg.encode('utf-8'))
     hex_hash = keccak_hash.hexdigest()
     h_int = int(hex_hash, 16)
-    print(f'hex_hash: {hex_hash}')
-    print(f'h: {h_int}')
     return h_int
-
-hashedMsg = hashMsg(m)
 
 # 4) sign m using your private key and a randomly chosen nonce k. produce (r, s, h, PubKey)
 # (r, s, h, PubKey) = sign(h)
 # returns (r,s) signature
-def sign(h):
+def sign(msg):
+    h = hashMsg(msg)
     k = secrets.randbelow(n) # some random number below n
     R = cv.mul_point(k, g)
     r = R.x
@@ -43,11 +40,12 @@ def sign(h):
     return r, s
 
 
-(r, s) = sign(hashedMsg)
+(r, s) = sign(msg1)
 print(f'r: {r}, s: {s}')
 
 # 5) verify (r, s, h, PubKey) is valid
-def verify(r, s, h):
+def verify(r, s, m):
+    h = hashMsg(m)
     sInv = pow(s, -1, n)
     left = cv.mul_point((h * sInv), g)
     right = cv.mul_point((r * sInv), pubKeyPoint)
@@ -56,6 +54,10 @@ def verify(r, s, h):
     return rPrime == r
 
 
-print(f'is msg signed correctly?: {verify(r, s, hashedMsg)}')
+print(f'is msg \'{msg1}\' signed correctly?: {verify(r, s, msg1)}')
+
+msg2 = "hello new world"
+print(f'is msg \'{msg2}\' signed correctly?: {verify(r, s, msg2)}')
+
 
 
