@@ -1,4 +1,4 @@
-from py_ecc.bn128 import G1, multiply, add
+from py_ecc.bn128 import G1, multiply, add, curve_order
 
 # Prover
 secret_x = 5
