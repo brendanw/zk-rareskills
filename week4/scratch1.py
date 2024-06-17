@@ -14,4 +14,3 @@ CD = pairing(D, C)
 
 print(AB + CD)
 print(AB * CD)
-print(G12)
