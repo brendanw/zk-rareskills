@@ -36,4 +36,4 @@ runTest(np.array([31,37,41]), 23)
 
 print("Test Successful")
 
-# It doesn't matter if we apply a scalar before or after we transformr a column vector as a polynomial
+# It doesn't matter if we apply a scalar before or after we transform a column vector as a polynomial

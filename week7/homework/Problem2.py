@@ -3,6 +3,7 @@ import random
 from scipy.interpolate import lagrange
 from numpy.typing import NDArray
 from numpy import poly1d
+from numpy.polynomial.polynomial import Polynomial
 
 
 # Convert the following R1CS into a QAP over real numbers, not a finite field
@@ -45,13 +46,13 @@ assert result.all(), "result contains an inequality"
 # Aw*Bw = Cw
 
 
-# let's turn A into polynomials!
+# let's turn each matrix into polynomials!
 def convertVectorToPolynomial(m, witness):
     polys = []
     xs = np.array([1, 2, 3])
     for i in range(len(A[0])):
         # need to get the column of A
-        col = A.take(i, 1)
+        col = m.take(i, 1)
         myPoly = lagrange(xs, col)
         polys.append(myPoly)
 
@@ -72,3 +73,22 @@ bPolynomial = convertVectorToPolynomial(B, w)
 cPolynomial = convertVectorToPolynomial(C, w)
 
 leftPolynomial = aPolynomial * bPolynomial
+
+# sanity check evaluate at x=1
+print(f'{leftPolynomial(1)}')
+print(f'{cPolynomial(1)}')
+
+# calculate T
+t = (x-1) * (x-2) * (x-3)
+
+# calculate h
+h = (aPolynomial * bPolynomial - cPolynomial) / t
+
+# left
+left = aPolynomial * bPolynomial
+
+# right
+right = cPolynomial + h*t
+
+print(f'left: {left}')
+print(f'right: {right}')
