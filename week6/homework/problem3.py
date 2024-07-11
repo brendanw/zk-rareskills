@@ -48,6 +48,7 @@ def verifyEquation(s1: NDArray[Any], s2: NDArray[Any]) -> bool:
         left = pairing(multiply(G2, 5), s1[j])
         right = pairing(s2[j], multiply(G1, 5))
         assert(eq(left, right))
+
     A = np.dot(L,s1)
     B = np.dot(R,s2)
     C = np.dot(O,s1)

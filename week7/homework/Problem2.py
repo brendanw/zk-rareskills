@@ -1,5 +1,9 @@
 import numpy as np
 import random
+from scipy.interpolate import lagrange
+from numpy.typing import NDArray
+from numpy import poly1d
+
 
 # Convert the following R1CS into a QAP over real numbers, not a finite field
 
@@ -20,7 +24,8 @@ C = np.array([[0,0,0,0,1,0],
 x = 100
 y = 100
 
-# this is our orignal formula
+# this is our original formula
+# out = 3yx^2 + 5xy - x - 2xy + 3
 out = 3 * x * x * y + 5 * x * y - x- 2*y + 3# the witness vector with the intermediate variables inside
 v1 = 3*x*x
 v2 = v1 * y
@@ -37,3 +42,33 @@ assert result.all(), "result contains an inequality"
 #
 # Check your work by seeing that the polynomial on both sides of the equation is the same.
 
+# Aw*Bw = Cw
+
+
+# let's turn A into polynomials!
+def convertVectorToPolynomial(m, witness):
+    polys = []
+    xs = np.array([1, 2, 3])
+    for i in range(len(A[0])):
+        # need to get the column of A
+        col = A.take(i, 1)
+        myPoly = lagrange(xs, col)
+        polys.append(myPoly)
+
+    # let's multiple the polynomials by the witness
+    newPolys = []
+    for i in range(len(polys)):
+        newPoly = polys[i] * w[i]
+        newPolys.append(newPoly)
+
+    finalPolynomial = 0
+    for i in range(len(newPolys)):
+        finalPolynomial = newPolys[i] + finalPolynomial
+
+    return finalPolynomial
+
+aPolynomial = convertVectorToPolynomial(A, w)
+bPolynomial = convertVectorToPolynomial(B, w)
+cPolynomial = convertVectorToPolynomial(C, w)
+
+leftPolynomial = aPolynomial * bPolynomial
