@@ -128,6 +128,8 @@ print(f'C = {C}')
 # verifier validates e([A]1,[B]2) - e([C]1,[G]2) = 0
 left = pairing(B,A)
 right = pairing(G2, C)
+print(f'left = {left}')
+print(f'right = {right}')
 zeroG12 = left - right
 # below should be G12
 print(f'zeroG12 = {zeroG12}')
