@@ -69,6 +69,7 @@ def convertVectorToPolynomial(m, witness):
     return finalPolynomial
 
 aPolynomial = convertVectorToPolynomial(A, w)
+print(f'aPolynomial = {aPolynomial}')
 bPolynomial = convertVectorToPolynomial(B, w)
 cPolynomial = convertVectorToPolynomial(C, w)
 
@@ -76,7 +77,16 @@ leftPolynomial = aPolynomial * bPolynomial
 
 # sanity check evaluate at x=1
 print(f'{leftPolynomial(1)}')
-print(f'{cPolynomial(1)}')
+print(f'{cPolynomial(1)}\n')
+
+print(f'leftPolynomial(2) = {leftPolynomial(2)}')
+print(f'cPolynomial(2) = {cPolynomial(2)}\n')
+
+print(f'leftPolynomial(3) = {leftPolynomial(3)}')
+print(f'cPolynomial(3) = {cPolynomial(3)}\n')
+
+print(f'leftPolynomial(5) = {leftPolynomial(5)}')
+print(f'cPolynomial(5) = {cPolynomial(5)}\n')
 
 # calculate T
 t = (x-1) * (x-2) * (x-3)
@@ -89,6 +99,9 @@ left = aPolynomial * bPolynomial
 
 # right
 right = cPolynomial + h*t
+
+naiveRight = cPolynomial + t
+print(f'naiveRight: {naiveRight}\n')
 
 print(f'left: {left}')
 print(f'right: {right}')

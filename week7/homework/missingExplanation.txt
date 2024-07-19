@@ -1,0 +1,13 @@
+In the Quadratic Arithmetic Program chapter . It took me a minute to get this section
+h(x)
+It should be obvious that although t(x) represents the zero vector (it has roots at x = 1,2,3…), it won't necessarily
+balance the equation (U·a)(V·a) = (W·a) + t(x). We need to multiply it by yet another polynomial that interpolates zero
+and balances out the equation.
+
+a 3-value vector will give us a polynomial of format x^2 + x + 1. thus when we multiply two polynomials together on the
+lefthand side we should get something with x^4 with degree 4. so lefthand side degree will be n+1 t(X) will give us a
+polynomial of degree n .
+
+(W*a) + t(x) should give us a polynomial of degree n while lefthand side should be of degree n+1 where n is the number
+of rows or equations . that's why we define 0 vector as h(x)*t(x). it's so we can get something where f(1)=0, f(2)=0,
+f(3)=0 such that we can get a polynomial of degree n+1 on the right hand side.

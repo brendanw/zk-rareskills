@@ -62,10 +62,16 @@ term_3 = inner_product_polynomials_with_witness(W_polys, w)
 # t = (x - 1)(x - 2)(x - 3)(x - 4)
 t = galois.Poly([1, 78], field = GF) * galois.Poly([1, 77], field = GF) * galois.Poly([1, 76], field = GF)
 
+# t is gonna be of degree 3 which still doesn't match the lefthand side which will be of degree 4
+# so we use some algebra and the nifty factoid that
+# When two non-zero polynomials are multiplied, the roots of the product is the union of the roots of the individual polynomials
+
 h = (term_1 * term_2 - term_3) // t
 
 left = term_1 * term_2
 right = term_3 + h * t
+naiveRight = term_3 + t
+print(naiveRight)
 print(left)
 print(right)
 
