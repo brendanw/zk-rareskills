@@ -8,6 +8,9 @@ from numpy import poly1d
 import galois
 from py_ecc.bn128 import G1, G2, add, curve_order, multiply, neg, Z1, pairing
 
+# This is solving homework 1 from week 8 by multipling h(x)*t(x) to get a polynomial and then evaluating the encrypted
+# tau on that polynomial
+
 # See homework8.png to see homework problem
 # An R1CS is represented by Ls * Rs = Os where s is a solution/witness vector and * represents hammard product
 # A QAP is a polynomial representation of this equivalency that evaluates to true at n given points
@@ -68,7 +71,6 @@ t = galois.Poly([1, (fieldOrder - 1)], field = GF) * galois.Poly([1, (fieldOrder
 # t is gonna be of degree 3 which still doesn't match the lefthand side which will be of degree 4
 # so we use some algebra and the nifty factoid that
 # When two non-zero polynomials are multiplied, the roots of the product is the union of the roots of the individual polynomials
-
 h = (U * V - W) // t
 
 ht = h * t
@@ -100,20 +102,10 @@ def generate_powers_of_tau_G2(tau, degree):
     return [multiply(G2, int(tau ** i)) for i in range(degree + 1)]
 
 # we compute G1 SRS
-g1_srs = generate_powers_of_tau_G1(tau, 3)
+g1_srs = generate_powers_of_tau_G1(tau, 4)
 
 # we compute G2 SRS
-g2_srs = generate_powers_of_tau_G2(tau, 3)
-
-# we compute T(tau) SRS.
-t_srs = []
-for i in range(len(g1_srs)):
-    tauRaisedToI = tau ** i
-    tAtTau = t(tau)
-    coefficient = tauRaisedToI * tAtTau
-    element = multiply(G1, int(coefficient))
-    print(f'new t_srs element = {element}')
-    t_srs.append(element)
+g2_srs = generate_powers_of_tau_G2(tau, 4)
 
 def inner_product(ec_points, coeffs):
     return reduce(add, (multiply(point, int(coeff)) for point, coeff in zip(ec_points, coeffs)), Z1)
@@ -132,17 +124,12 @@ print(f'B = {B}')
 Cprime = inner_product(g1_srs, W.coeffs[::-1])
 print(f'Cprime = {Cprime}')
 
-# different stab at evaluating HT
-altHT = inner_product(t_srs, ht.coeffs[::-1])
-print(f'altHT = {altHT}')
-
-# evaluate HT polynomial with T(tau) SRS to produce [HT]1
+# evaluate HT polynomial with G1_srs to produce [HT]1
 HT = inner_product(g1_srs, ht.coeffs[::-1])
 print(f'HT = {HT}')
-# TODO: there is another way to compute HT where verifier supplies T, I need to figure out how to do that
 
 # evaluate [C] = [C']1 + [HT]1
-C = add(Cprime, altHT)
+C = add(Cprime, HT)
 print(f'C = {C}')
 
 # verifier validates e([A]1,[B]2) - e([C]1,[G]2) = 0
@@ -151,8 +138,6 @@ right = pairing(G2, C)
 print(f'left = {left}')
 print(f'right = {right}')
 zeroG12 = left - right
+
 # below should be G12
 print(f'zeroG12 = {zeroG12}')
-
-# TODO: bonus points to have verifier validate that (a) G1 and G2 points match for trusted setup. (b) each subsequent set
-# of G1 and G2 points is the square of the previous points
