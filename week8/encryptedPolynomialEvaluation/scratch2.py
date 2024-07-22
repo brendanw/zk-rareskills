@@ -12,7 +12,7 @@ def generate_powers_of_tau(tau, degree):
     return [multiply(G1, int(tau ** i)) for i in range(degree + 1)]
 
 # p = (x - 4) * (x + 2)
-p = galois.Poly([1, -4], field=GF) * galois.Poly([1, 2], field=GF)
+p = galois.Poly([341, 237, 296], field = GF)
 print(f'p: {p}')
 
 # evaluate at 8
@@ -31,5 +31,9 @@ evaluate_then_convert_to_ec = multiply(G1, int(p(tau)))
 # evaluate via encrypted evaluation# coefficients need to be reversed to match the powers
 evaluate_on_ec = inner_product(powers_of_tau, p.coeffs[::-1])
 
-if eq(evaluate_then_convert_to_ec, evaluate_on_ec):
-    print("elliptic curve points are equal")
+print(f'A: {evaluate_then_convert_to_ec}')
+print(f'altA: {evaluate_on_ec}')
+
+assert eq(evaluate_on_ec, evaluate_then_convert_to_ec), "Wtf?"
+
+print('done')

@@ -6,7 +6,9 @@ from scipy.interpolate import lagrange
 from numpy.typing import NDArray
 from numpy import poly1d
 import galois
-from py_ecc.bn128 import G1, G2, add, curve_order, multiply, neg, Z1, pairing
+from py_ecc.bn128 import G1, G2, add, curve_order, multiply, neg, Z1, Z2, pairing
+
+# this is the solution where we use t_srs to evaluate h(x)*t(x)
 
 # See homework8.png to see homework problem
 # An R1CS is represented by Ls * Rs = Os where s is a solution/witness vector and * represents hammard product
@@ -17,8 +19,7 @@ from py_ecc.bn128 import G1, G2, add, curve_order, multiply, neg, Z1, pairing
 # last week's homework was an RCS representation of out = 3yx^2 + 5xy - x - 2xy + 3
 # the below will copy and paste setup from week7 homework so we can get U, V, W, HT
 
-# this really ought to match the curve order TODO: update this to use curve_order later
-fieldOrder = 811
+fieldOrder = curve_order
 GF = galois.GF(fieldOrder)
 
 L = np.array([[0,0,3,0,0,0],
@@ -68,7 +69,6 @@ t = galois.Poly([1, (fieldOrder - 1)], field = GF) * galois.Poly([1, (fieldOrder
 # t is gonna be of degree 3 which still doesn't match the lefthand side which will be of degree 4
 # so we use some algebra and the nifty factoid that
 # When two non-zero polynomials are multiplied, the roots of the product is the union of the roots of the individual polynomials
-
 h = (U * V - W) // t
 
 ht = h * t
@@ -100,21 +100,26 @@ def generate_powers_of_tau_G2(tau, degree):
     return [multiply(G2, int(tau ** i)) for i in range(degree + 1)]
 
 # we compute G1 SRS
-g1_srs = generate_powers_of_tau_G1(tau, 3)
+g1_srs = generate_powers_of_tau_G1(tau, 4)
+print(f'g1_srs = {g1_srs}')
 
 # we compute G2 SRS
-g2_srs = generate_powers_of_tau_G2(tau, 3)
+g2_srs = generate_powers_of_tau_G2(tau, 4)
+print(f'G2: {G2}')
+print(f'g2_srs = {g2_srs}\n\n')
 
 # we compute T(tau) SRS.
 t_srs = []
 for i in range(len(g1_srs)):
     tauRaisedToI = tau ** i
-    tAtTau = t(tau)
+    tAtTau = GF(t(tau))
     coefficient = tauRaisedToI * tAtTau
     element = multiply(G1, int(coefficient))
     print(f'new t_srs element = {element}')
     t_srs.append(element)
 
+# re-wrote inner_product a few different ways to see if there is an error in what is from the textbook
+# these all output the same values
 def inner_product(ec_points, coeffs):
     return reduce(add, (multiply(point, int(coeff)) for point, coeff in zip(ec_points, coeffs)), Z1)
 
@@ -129,20 +134,16 @@ B = inner_product(g2_srs, V.coeffs[::-1])
 print(f'B = {B}')
 
 # evaluate W polynomial with G1 SRS to produce [C']1
+print(f'W.coeffs[::-1] = {W.coeffs[::-1]}')
 Cprime = inner_product(g1_srs, W.coeffs[::-1])
 print(f'Cprime = {Cprime}')
 
-# different stab at evaluating HT
-altHT = inner_product(t_srs, ht.coeffs[::-1])
-print(f'altHT = {altHT}')
-
-# evaluate HT polynomial with T(tau) SRS to produce [HT]1
-HT = inner_product(g1_srs, ht.coeffs[::-1])
+# evaluate HT polynomial with G1_srs to produce [HT]1
+HT = inner_product(t_srs, h.coeffs[::-1])
 print(f'HT = {HT}')
-# TODO: there is another way to compute HT where verifier supplies T, I need to figure out how to do that
 
 # evaluate [C] = [C']1 + [HT]1
-C = add(Cprime, altHT)
+C = add(Cprime, HT)
 print(f'C = {C}')
 
 # verifier validates e([A]1,[B]2) - e([C]1,[G]2) = 0
@@ -151,8 +152,6 @@ right = pairing(G2, C)
 print(f'left = {left}')
 print(f'right = {right}')
 zeroG12 = left - right
-# below should be G12
-print(f'zeroG12 = {zeroG12}')
 
-# TODO: bonus points to have verifier validate that (a) G1 and G2 points match for trusted setup. (b) each subsequent set
-# of G1 and G2 points is the square of the previous points
+# below should be G12 point at infinity
+print(f'zeroG12 = {zeroG12}\n\n')

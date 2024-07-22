@@ -75,4 +75,21 @@ print(naiveRight)
 print(left)
 print(right)
 
+print('\n=====\n')
+
+print(f'left(1) = {left(1)}')
+print(f'right(1) = {right(1)}\n\n')
+
+print(f'left(2) = {left(2)}')
+print(f'right(2) = {right(2)}\n\n')
+
+print(f'left(3) = {left(3)}')
+print(f'right(3) = {right(3)}\n\n')
+
+print(f'left(4) = {left(4)}')
+print(f'right(4) = {right(4)}\n\n')
+
+print(f'left(78) = {left(78)}')
+print(f'right(78) = {right(78)}\n\n')
+
 assert term_1 * term_2 == term_3 + h * t, "division has a remainder"

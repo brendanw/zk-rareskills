@@ -6,7 +6,7 @@ from scipy.interpolate import lagrange
 from numpy.typing import NDArray
 from numpy import poly1d
 import galois
-from py_ecc.bn128 import G1, G2, add, curve_order, multiply, neg, Z1, pairing
+from py_ecc.bn128 import G1, G2, add, curve_order, multiply, neg, Z1, Z2, pairing
 
 # This is solving homework 1 from week 8 by multipling h(x)*t(x) to get a polynomial and then evaluating the encrypted
 # tau on that polynomial
@@ -21,7 +21,7 @@ from py_ecc.bn128 import G1, G2, add, curve_order, multiply, neg, Z1, pairing
 # the below will copy and paste setup from week7 homework so we can get U, V, W, HT
 
 # this really ought to match the curve order TODO: update this to use curve_order later
-fieldOrder = 811
+fieldOrder = curve_order
 GF = galois.GF(fieldOrder)
 
 L = np.array([[0,0,3,0,0,0],
@@ -103,10 +103,15 @@ def generate_powers_of_tau_G2(tau, degree):
 
 # we compute G1 SRS
 g1_srs = generate_powers_of_tau_G1(tau, 4)
+print(f'g1_srs = {g1_srs}')
 
 # we compute G2 SRS
 g2_srs = generate_powers_of_tau_G2(tau, 4)
+print(f'G2: {G2}')
+print(f'g2_srs = {g2_srs}\n\n')
 
+# re-wrote inner_product a few different ways to see if there is an error in what is from the textbook
+# these all output the same values
 def inner_product(ec_points, coeffs):
     return reduce(add, (multiply(point, int(coeff)) for point, coeff in zip(ec_points, coeffs)), Z1)
 
@@ -121,6 +126,7 @@ B = inner_product(g2_srs, V.coeffs[::-1])
 print(f'B = {B}')
 
 # evaluate W polynomial with G1 SRS to produce [C']1
+print(f'W.coeffs[::-1] = {W.coeffs[::-1]}')
 Cprime = inner_product(g1_srs, W.coeffs[::-1])
 print(f'Cprime = {Cprime}')
 
@@ -139,5 +145,5 @@ print(f'left = {left}')
 print(f'right = {right}')
 zeroG12 = left - right
 
-# below should be G12
-print(f'zeroG12 = {zeroG12}')
+# below should be G12 point at infinity
+print(f'zeroG12 = {zeroG12}\n\n')

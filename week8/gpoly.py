@@ -12,3 +12,4 @@ from py_ecc.bn128 import neg, multiply, G1, G2, pairing, G12
 result = multiply(G1, 28)
 print(f'result: {result}')
 
+print(f'G2: {G2}')
