@@ -6,7 +6,7 @@ from scipy.interpolate import lagrange
 from numpy.typing import NDArray
 from numpy import poly1d
 import galois
-from py_ecc.bn128 import G1, G2, add, curve_order, multiply, neg, Z1, Z2, pairing
+from py_ecc.bn128 import G1, G2, add, curve_order, multiply, neg, Z1, Z2, pairing, final_exponentiate
 from sympy import summation
 
 # ret2basic has decent implementation of groth16 at https://github.com/ret2basic/Groth16/blob/main/groth16.py
@@ -150,7 +150,7 @@ print(f'C: {C}')
 alphaBeta = pairing(betaG, alphaG)
 AB = pairing(B,A)
 C12 = pairing(G2, C)
-I12 = alphaBeta + C12 - AB
+I12 = final_exponentiate(C12*alphaBeta/AB)
 print(f'I12 = {I12}')
 
 newOutcome = pairing(betaG, alphaG) + pairing(G2, C) - pairing(B, A)
