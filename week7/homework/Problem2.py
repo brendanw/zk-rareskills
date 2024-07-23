@@ -45,11 +45,11 @@ assert result.all(), "result contains an inequality"
 
 # Aw*Bw = Cw
 
-
 # let's turn each matrix into polynomials!
 def convertVectorToPolynomial(m, witness):
     polys = []
     xs = np.array([1, 2, 3])
+    # 0 thru 6
     for i in range(len(A[0])):
         # need to get the column of A
         col = m.take(i, 1)
