@@ -38,7 +38,7 @@ y = GF(21)
 out = 3 * x * x * y + 5 * x * y + GF(fieldOrder - 1)*x + GF(fieldOrder - 2) * y + GF(3)
 v1 = 3*x*x
 v2 = v1 * y
-w = GF(np.array([1, out, x, y, v1, v2]))
+witness = GF(np.array([1, out, x, y, v1, v2]))
 
 def interpolate_column(col):
     xs = GF(np.array([1,2,3]))
@@ -53,9 +53,9 @@ def inner_product_polynomials_with_witness(polys, witness):
     sum_ = lambda x, y: x + y
     return reduce(sum_, map(mul_, polys, witness))
 
-U = inner_product_polynomials_with_witness(U_polys, w)
-V = inner_product_polynomials_with_witness(V_polys, w)
-W = inner_product_polynomials_with_witness(W_polys, w)
+U = inner_product_polynomials_with_witness(U_polys, witness)
+V = inner_product_polynomials_with_witness(V_polys, witness)
+W = inner_product_polynomials_with_witness(W_polys, witness)
 
 # t = (x - 1)(x - 2)(x - 3)
 t = galois.Poly([1, (fieldOrder - 1)], field = GF) * galois.Poly([1, (fieldOrder - 2)], field = GF) * galois.Poly([1, (fieldOrder - 3)], field = GF)
@@ -100,7 +100,8 @@ beta = GF(211)
 betaG = multiply(G2, int(beta))
 
 # we compute powers of tau for C. U_polys will be of length 6 since that is the witness size
-# I validated that my code outputs the exact same as ret2basic's
+# I validated that my code outputs the exact same as ret2basic's omega generation code if I
+# copy and paste his in here
 omega_srs = []
 for i in range(len(U_polys)):
     wPoly = W_polys[i]
@@ -128,22 +129,21 @@ B = add(betaG, summationOfVAtTau)
 print(f'B: {B}')
 
 # Z1 is point at infinity
-summationOfOmegaValues = Z1
+omegaSummation = Z1
 for i in range(len(omega_srs)):
-    elem = multiply(omega_srs[i], int(w[i]))
-    summationOfOmegaValues = add(summationOfOmegaValues, elem)
+    elem = multiply(omega_srs[i], int(witness[i]))
+    omegaSummation = add(omegaSummation, elem)
 
-powers_of_tau_for_inputs = [multiply(entry, int(w[i])) for entry in omega_srs]
-altSummation = inner_product(omega_srs, w)
+powers_of_tau_for_inputs = [multiply(entry, int(witness[i])) for entry in omega_srs]
+altOmegaSummation = inner_product(omega_srs, witness)
+print(f'omegaSummation: {omegaSummation}')
+print(f'altOmegaSummation: {altOmegaSummation}')
 # summation and altSummation are the same, I checked!
 
 HT = inner_product(t_srs, h.coeffs[::-1])
 print(f'HT: {HT}')
 
-CPrime = inner_product(g1_srs, W.coeffs[::-1])
-oldC = add(CPrime, HT)
-
-C = add(altSummation, HT)
+C = add(altOmegaSummation, HT)
 print(f'C: {C}')
 
 # Verifier validates that `e(G2, C) + e(alphaG, betaG) - e(B2,A1) === 0`
@@ -153,6 +153,11 @@ C12 = pairing(G2, C)
 I12 = alphaBeta + C12 - AB
 print(f'I12 = {I12}')
 
+newOutcome = pairing(betaG, alphaG) + pairing(G2, C) - pairing(B, A)
+print(f'newOutcome = {newOutcome}')
+
 # verify simple version without alpha and beta
+CPrime = inner_product(g1_srs, W.coeffs[::-1])
+oldC = add(CPrime, HT)
 oldOutcome = pairing(summationOfVAtTau, summationOfUAtTau) - pairing(G2, oldC)
 print(f'oldOutcome = {oldOutcome}')
