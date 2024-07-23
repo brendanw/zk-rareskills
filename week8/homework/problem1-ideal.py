@@ -39,8 +39,8 @@ R_galois = GF(R)
 O_galois = GF(O)
 
 # this x and y shouldn't work -- the answer should be x=100,y=100
-x = GF(0)
-y = GF(0)
+x = GF(50)
+y = GF(50)
 
 out = 3 * x * x * y + 5 * x * y + GF(fieldOrder - 1)*x + GF(fieldOrder - 2) * y + GF(3)
 v1 = 3*x*x

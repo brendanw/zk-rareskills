@@ -9,9 +9,11 @@ import galois
 from py_ecc.bn128 import G1, G2, add, curve_order, multiply, neg, Z1, Z2, pairing
 from sympy import summation
 
+# ret2basic has decent implementation of groth16 at https://github.com/ret2basic/Groth16/blob/main/groth16.py
+
 # QAP. We will take QAP from last week's homework that represents out = 3yx^2 + 5xy - x - 2xy + 3
 # for the first rendition we will make all values of the witness private for simplicity
-fieldOrder = curve_order
+fieldOrder = curve_order # 557 is a small prime number
 GF = galois.GF(fieldOrder)
 
 L = np.array([[0,0,3,0,0,0],
@@ -101,11 +103,12 @@ betaG = multiply(G2, int(beta))
 # we'll need to compute
 omega_srs = []
 for i in range(len(U_polys)):
-    wVal = W_polys[i](tau)
-    uVal = beta * U_polys[i](tau)
-    vVal = alpha * V_polys[i](tau)
-    sum = wVal + uVal + vVal
-    encrypted = multiply(G1, int(sum))
+    wPoly = W_polys[i]
+    uPoly = beta * U_polys[i]
+    vPoly = alpha * V_polys[i]
+    finalPoly = wPoly + uPoly + vPoly
+    summation = finalPoly(tau)
+    encrypted = multiply(G1, int(summation))
     omega_srs.append(encrypted)
 
 def inner_product(ec_points, coeffs):
@@ -123,6 +126,7 @@ B = add(betaG, summationOfVAtTau)
 print(f'B: {B}')
 
 # Z1 is point at infinity
+# TODO: am I matching correct tau elems w/ correct witness elems
 summationOfOmegaValues = Z1
 for i in range(len(omega_srs)):
     elem = multiply(omega_srs[i], int(w[i]))
@@ -133,7 +137,7 @@ HT = inner_product(t_srs, h.coeffs[::-1])
 C = add(summationOfOmegaValues, HT)
 print(f'C: {C}')
 
-# Verifier verifies
+# Verifier validates that `e(G2, C) + e(alphaG, betaG) - e(B2,A1) === 0`
 alphaBeta = pairing(betaG, alphaG)
 AB = pairing(B,A)
 C12 = pairing(G2, C)
