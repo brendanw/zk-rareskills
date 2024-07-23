@@ -100,7 +100,7 @@ beta = GF(211)
 betaG = multiply(G2, int(beta))
 
 # we compute powers of tau for C. U_polys will be of length 6 since that is the witness size
-# we'll need to compute
+# I validated that my code outputs the exact same as ret2basic's
 omega_srs = []
 for i in range(len(U_polys)):
     wPoly = W_polys[i]
@@ -115,26 +115,35 @@ def inner_product(ec_points, coeffs):
     return reduce(add, (multiply(point, int(coeff)) for point, coeff in zip(ec_points, coeffs)), Z1)
 
 # Prover computes witness vector
+# I sanity checked summationOfUAtTau matches my value from last week's homework
 summationOfUAtTau = inner_product(g1_srs, U.coeffs[::-1])
 
 A = add(alphaG, summationOfUAtTau)
 print(f'A: {A}')
 
+# I sanity checked summationOfVAtTau matches my value from last week's homework
 summationOfVAtTau = inner_product(g2_srs, V.coeffs[::-1])
 
 B = add(betaG, summationOfVAtTau)
 print(f'B: {B}')
 
 # Z1 is point at infinity
-# TODO: am I matching correct tau elems w/ correct witness elems
 summationOfOmegaValues = Z1
 for i in range(len(omega_srs)):
     elem = multiply(omega_srs[i], int(w[i]))
     summationOfOmegaValues = add(summationOfOmegaValues, elem)
 
-HT = inner_product(t_srs, h.coeffs[::-1])
+powers_of_tau_for_inputs = [multiply(entry, int(w[i])) for entry in omega_srs]
+altSummation = inner_product(omega_srs, w)
+# summation and altSummation are the same, I checked!
 
-C = add(summationOfOmegaValues, HT)
+HT = inner_product(t_srs, h.coeffs[::-1])
+print(f'HT: {HT}')
+
+CPrime = inner_product(g1_srs, W.coeffs[::-1])
+oldC = add(CPrime, HT)
+
+C = add(altSummation, HT)
 print(f'C: {C}')
 
 # Verifier validates that `e(G2, C) + e(alphaG, betaG) - e(B2,A1) === 0`
@@ -143,3 +152,7 @@ AB = pairing(B,A)
 C12 = pairing(G2, C)
 I12 = alphaBeta + C12 - AB
 print(f'I12 = {I12}')
+
+# verify simple version without alpha and beta
+oldOutcome = pairing(summationOfVAtTau, summationOfUAtTau) - pairing(G2, oldC)
+print(f'oldOutcome = {oldOutcome}')
